@@ -1,0 +1,2 @@
+"""FruitAPI application package."""
+
