@@ -12,11 +12,14 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 - Lecture 1 code: complete for HW1. FruitAPI is implemented with health, list, create, get one, update, delete, optional `in_season` filtering, optional `limit`, and `/fruits/cheapest`.
 - Manual verification: complete for HW1. Health, list, cheapest, limit, create, update, and delete were checked locally against the running API.
 - Automated tests: not started yet. Save unit and integration tests for the testing homework unless needed earlier.
+- Lecture 2 build: complete for mandatory HW2 scope. Trunk-based development was selected and documented; Dockerfile was added; Docker image was built and run locally; `GET /health` worked from the container.
 
 ## Implementation details
 
+- Branching strategy: trunk-based development. `main` is the trunk and should stay runnable; use short-lived branches for focused changes when PR/CI checks are needed.
 - Stack: Python 3.12 + FastAPI + Uvicorn.
 - Runtime dependencies are pinned in `requirements.txt`; dev/test dependencies are pinned in `requirements-dev.txt`.
+- Docker image definition lives in `Dockerfile`; build context exclusions live in `.dockerignore`.
 - Application code lives under `app/`, as required.
 - Root entrypoint is `main.py`, which creates the FastAPI app and includes the API router.
 - Current data storage is an in-memory `FruitStore` in `app/store.py`.
@@ -37,7 +40,8 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 
 ## Verification notes
 
-- `python3 -m compileall app main.py` passed.
+- `python3 -m compileall app main.py` passed after Dockerfile changes.
+- Docker image verification passed locally on 2026-05-24: `docker build -t fruitapi .` and `docker run --rm -p 8000:8000 fruitapi` worked, and `GET /health` returned `{"status":"ok"}`.
 - Runtime and dev dependencies were installed into `.venv`.
 - Direct Python smoke check of route functions passed:
   - `health()` returns `{"status": "ok"}`.
