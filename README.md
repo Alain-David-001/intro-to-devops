@@ -40,3 +40,45 @@ docker run --rm -p 8000:8000 fruitapi
 ```
 
 Then open `http://127.0.0.1:8000/health`.
+
+## Run tests
+
+Unit-style tests run without manually starting the server:
+
+```bash
+.venv/bin/python -m pytest app
+```
+
+Integration tests require FruitAPI to be running. In one terminal:
+
+```bash
+.venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
+```
+
+In another terminal:
+
+```bash
+BASE_URL=http://127.0.0.1:8000 .venv/bin/python -m pytest tests
+```
+
+You can also run integration tests against the Docker container:
+
+```bash
+docker build -t fruitapi .
+docker run --rm -p 8000:8000 fruitapi
+BASE_URL=http://127.0.0.1:8000 .venv/bin/python -m pytest tests
+```
+
+## CI/CD
+
+This repository has two GitHub Actions workflows:
+
+- Pull requests to `main` run unit tests only.
+- Pushes to `main` run unit tests, build the Docker image, run integration tests against the image, tag it with the SemVer value from `VERSION`, and push it to GitHub Container Registry.
+
+After the PR workflow appears in GitHub, configure the `Unit tests` check as a required status check for `main` branch protection.
+
+
+## Versioning
+
+Docker image releases use Semantic Versioning from the `VERSION` file. Update that file before a release, for example `0.3.0`, and the main workflow publishes `ghcr.io/<owner>/fruitapi:<version>` plus `latest`.
