@@ -12,7 +12,7 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 - Lecture 1 code: complete for HW1. FruitAPI is implemented with health, list, create, get one, update, delete, optional `in_season` filtering, optional `limit`, and `/fruits/cheapest`.
 - Manual verification: complete for HW1. Health, list, cheapest, limit, create, update, and delete were checked locally against the running API.
 - Lecture 3 test: complete for test requirements. Unit-style tests and integration tests have been added and verified locally; integration tests were also verified against the Docker container.
-- Lecture 3 CI/release: in progress. GitHub Actions workflows were added for PR unit tests and main branch unit/build/integration/publish pipeline. Image versioning uses SemVer from the `VERSION` file.
+- Lecture 3 CI/release: in progress. GitHub Actions workflows were added for PR unit tests, PR result comments, and main branch unit/build/integration/publish pipeline. Image versioning uses SemVer from the `VERSION` file.
 - Lecture 2 build: complete for mandatory HW2 scope. Trunk-based development was selected and documented; Dockerfile was added; Docker image was built and run locally; `GET /health` worked from the container.
 
 ## Implementation details
