@@ -111,3 +111,4 @@ def test_cheapest_fruit_when_store_empty_returns_404(client):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "No fruits found"}
+def test_branch_protection_blocks_failing_tests(): assert False
