@@ -11,7 +11,9 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 - Lecture 1 plan: complete. Course docs were reviewed: `README.md`, `AGENTS.md`, `PROJECT-REQUIREMENTS.md`, and `Homeworks.md`.
 - Lecture 1 code: complete for HW1. FruitAPI is implemented with health, list, create, get one, update, delete, optional `in_season` filtering, optional `limit`, and `/fruits/cheapest`.
 - Manual verification: complete for HW1. Health, list, cheapest, limit, create, update, and delete were checked locally against the running API.
-- Automated tests: not started yet. Save unit and integration tests for the testing homework unless needed earlier.
+- Lecture 3 test: complete for test requirements. Unit-style tests and integration tests have been added and verified locally; integration tests were also verified against the Docker container.
+- Lecture 3 CI/release: in progress. GitHub Actions workflows were added for PR unit tests, PR result comments, and main branch unit/build/integration/publish pipeline. Image versioning uses SemVer from the `VERSION` file.
+- Branch protection verification: complete. A temporary failing PR test caused the required `PR Unit Tests / Unit tests` check to fail and blocked merging.
 - Lecture 2 build: complete for mandatory HW2 scope. Trunk-based development was selected and documented; Dockerfile was added; Docker image was built and run locally; `GET /health` worked from the container.
 
 ## Implementation details
@@ -28,6 +30,8 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
   - Banana, price 0.75, in season.
   - Mango, price 2.50, not in season.
 
+- Release version source: `VERSION` currently contains `0.3.0`.
+
 ## Current API surface
 
 - `GET /health` returns `{"status": "ok"}`.
@@ -40,6 +44,11 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 
 ## Verification notes
 
+- Unit tests passed locally on 2026-05-24: `.venv/bin/python -m pytest app` -> 11 passed.
+- Integration tests passed locally against running app on 2026-05-24: `BASE_URL=http://127.0.0.1:8000 .venv/bin/python -m pytest tests` -> 4 passed.
+- Integration tests passed locally against Docker container on 2026-05-24 with the same `BASE_URL` command -> 4 passed.
+- PR branch protection was verified on 2026-05-24: an intentional failing test made the required PR check fail and disabled merging until fixed.
+- Test file syntax check passed with Python AST parsing in Codex.
 - `python3 -m compileall app main.py` passed after Dockerfile changes.
 - Docker image verification passed locally on 2026-05-24: `docker build -t fruitapi .` and `docker run --rm -p 8000:8000 fruitapi` worked, and `GET /health` returned `{"status":"ok"}`.
 - Runtime and dev dependencies were installed into `.venv`.
@@ -51,4 +60,5 @@ Build the course FruitAPI step by step, following `PROJECT-REQUIREMENTS.md` and 
 
 ## Next steps
 
-- Add unit and integration tests when we reach the testing homework.
+- Push `hw3-tests`, open a PR, confirm the PR unit-test workflow reports on the PR, then configure that check as required for `main`.
+- After merge, confirm the main workflow builds, integration-tests, versions, and pushes the Docker image to GHCR.
