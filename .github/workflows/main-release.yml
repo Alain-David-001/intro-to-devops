@@ -50,16 +50,47 @@ jobs:
             -t "${{ steps.image.outputs.latest }}" \
             .
 
+      - name: Create Docker network
+        run: docker network create fruitapi-ci
+
+      - name: Run MySQL container
+        run: |
+          docker run --rm -d --name fruitapi-mysql --network fruitapi-ci \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_DATABASE=fruitapi \
+            -e MYSQL_USER=fruitapi \
+            -e MYSQL_PASSWORD=fruitapi \
+            mysql:8.4
+
+      - name: Wait for MySQL
+        run: |
+          for attempt in {1..30}; do
+            if docker exec fruitapi-mysql mysqladmin ping -h 127.0.0.1 -u root -proot --silent; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs fruitapi-mysql
+          exit 1
+
       - name: Run Docker container
-        run: docker run --rm -d --name fruitapi-ci -p 8000:8000 "${{ steps.image.outputs.tag }}"
+        run: |
+          docker run --rm -d --name fruitapi-ci --network fruitapi-ci -p 8000:8000 \
+            -e FRUITAPI_STORE=mysql \
+            -e DB_HOST=fruitapi-mysql \
+            -e DB_PORT=3306 \
+            -e DB_NAME=fruitapi \
+            -e DB_USER=fruitapi \
+            -e DB_PASSWORD=fruitapi \
+            "${{ steps.image.outputs.tag }}"
 
       - name: Wait for FruitAPI
         run: |
-          for attempt in {1..20}; do
+          for attempt in {1..30}; do
             if curl -fsS http://127.0.0.1:8000/health; then
               exit 0
             fi
-            sleep 1
+            sleep 2
           done
           docker logs fruitapi-ci
           exit 1
@@ -67,9 +98,12 @@ jobs:
       - name: Run integration tests
         run: BASE_URL=http://127.0.0.1:8000 python -m pytest tests
 
-      - name: Stop Docker container
+      - name: Stop Docker containers
         if: always()
-        run: docker stop fruitapi-ci || true
+        run: |
+          docker stop fruitapi-ci || true
+          docker stop fruitapi-mysql || true
+          docker network rm fruitapi-ci || true
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3

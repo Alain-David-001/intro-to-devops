@@ -1,0 +1,7 @@
+aws_region      = "eu-central-1"
+project_name    = "fruitapi"
+container_image = "ghcr.io/alain-david-001/fruitapi:0.4.0"
+db_name         = "fruitapi"
+db_username     = "fruitapi"
+
+allowed_cidr = "203.0.113.10/32"
