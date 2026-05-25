@@ -3,3 +3,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
