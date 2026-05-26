@@ -143,7 +143,7 @@ resource "random_password" "db" {
 }
 
 resource "aws_secretsmanager_secret" "db_password" {
-  name = "${local.name}/db-password"
+  name_prefix = "${local.name}/db-password-"
 }
 
 resource "aws_secretsmanager_secret_version" "db_password" {
