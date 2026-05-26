@@ -131,7 +131,7 @@ Docs-only or Terraform-only changes do not need a `VERSION` bump because they do
 
 ## Deploy with Terraform on AWS
 
-The HW4 Terraform configuration lives in `infra/terraform`. It deploys FruitAPI on ECS Fargate with RDS MySQL and stores the generated database password in AWS Secrets Manager.
+The Terraform configuration lives in `infra/terraform`. It deploys FruitAPI on ECS Fargate with RDS MySQL, stores the generated database password in AWS Secrets Manager, sends container logs to CloudWatch, and serves traffic through an Application Load Balancer.
 
 ```bash
 cd infra/terraform
@@ -142,6 +142,6 @@ terraform plan
 terraform apply
 ```
 
-The default container image is `ghcr.io/alain-david-001/fruitapi:0.4.0`. Another user can clone this repo and deploy their own copy by using their own AWS credentials and their own `terraform.tfvars` values.
+The default container image is `ghcr.io/alain-david-001/fruitapi:0.5.0`, and the default ECS service size is two replicas. Another user can clone this repo and deploy their own copy by using their own AWS credentials and their own `terraform.tfvars` values.
 
 Do not commit `terraform.tfvars` or Terraform state files. When the deployment is no longer needed, run `terraform destroy` from `infra/terraform` to avoid ongoing AWS costs.

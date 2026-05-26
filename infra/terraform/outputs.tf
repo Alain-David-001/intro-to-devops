@@ -17,3 +17,13 @@ output "db_password_secret_arn" {
   description = "Secrets Manager ARN that stores the database password."
   value       = aws_secretsmanager_secret.db_password.arn
 }
+
+output "alb_dns_name" {
+  description = "Application Load Balancer DNS name."
+  value       = aws_lb.app.dns_name
+}
+
+output "fruitapi_url" {
+  description = "FruitAPI URL served by the Application Load Balancer."
+  value       = "http://${aws_lb.app.dns_name}"
+}
