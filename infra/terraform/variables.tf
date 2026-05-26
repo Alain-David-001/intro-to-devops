@@ -13,12 +13,18 @@ variable "project_name" {
 variable "container_image" {
   description = "FruitAPI container image to run on ECS."
   type        = string
-  default     = "ghcr.io/alain-david-001/fruitapi:0.4.0"
+  default     = "ghcr.io/alain-david-001/fruitapi:0.5.0"
 }
 
 variable "allowed_cidr" {
-  description = "CIDR block allowed to access FruitAPI on port 8000. Use your public IP with /32."
+  description = "CIDR block allowed to access the FruitAPI load balancer on port 80. Use your public IP with /32."
   type        = string
+}
+
+variable "app_replicas" {
+  description = "Number of FruitAPI ECS tasks to run."
+  type        = number
+  default     = 2
 }
 
 variable "db_name" {

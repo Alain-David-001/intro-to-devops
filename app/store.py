@@ -128,13 +128,19 @@ class MySQLFruitStore(FruitStore):
     def seed_if_empty(self, fruits: list[FruitCreate]) -> None:
         with self._connect() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT COUNT(*) AS count FROM fruits")
-                if cursor.fetchone()["count"] == 0:
-                    for fruit in fruits:
-                        cursor.execute(
-                            "INSERT INTO fruits (name, price, in_season) VALUES (%s, %s, %s)",
-                            (fruit.name, fruit.price, fruit.in_season),
-                        )
+                cursor.execute("SELECT GET_LOCK('fruitapi_seed', 10) AS locked")
+                if cursor.fetchone()["locked"] != 1:
+                    raise RuntimeError("Could not acquire MySQL seed lock")
+                try:
+                    cursor.execute("SELECT COUNT(*) AS count FROM fruits")
+                    if cursor.fetchone()["count"] == 0:
+                        for fruit in fruits:
+                            cursor.execute(
+                                "INSERT INTO fruits (name, price, in_season) VALUES (%s, %s, %s)",
+                                (fruit.name, fruit.price, fruit.in_season),
+                            )
+                finally:
+                    cursor.execute("SELECT RELEASE_LOCK('fruitapi_seed')")
 
     def seed(self, fruits: list[FruitCreate]) -> None:
         with self._connect() as connection:

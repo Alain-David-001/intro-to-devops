@@ -62,17 +62,42 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_security_group" "ecs" {
-  name        = "${local.name}-ecs-sg"
-  description = "Allow HTTP access to FruitAPI tasks"
+resource "aws_security_group" "alb" {
+  name        = "${local.name}-alb-sg"
+  description = "Allow HTTP access to the FruitAPI load balancer"
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "FruitAPI HTTP"
-    from_port   = local.container_port
-    to_port     = local.container_port
+    description = "FruitAPI HTTP from allowed CIDR"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = [var.allowed_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.name}-alb-sg"
+  }
+}
+
+resource "aws_security_group" "ecs" {
+  name        = "${local.name}-ecs-sg"
+  description = "Allow HTTP access to FruitAPI tasks from the ALB"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "FruitAPI HTTP from ALB"
+    from_port       = local.container_port
+    to_port         = local.container_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
   }
 
   egress {
@@ -157,6 +182,52 @@ resource "aws_db_instance" "mysql" {
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${local.name}"
   retention_in_days = 7
+}
+
+resource "aws_lb" "app" {
+  name               = "${local.name}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = aws_subnet.public[*].id
+
+  tags = {
+    Name = "${local.name}-alb"
+  }
+}
+
+resource "aws_lb_target_group" "app" {
+  name        = "${local.name}-tg"
+  port        = local.container_port
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.main.id
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200"
+    path                = "/health"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 3
+  }
+
+  tags = {
+    Name = "${local.name}-tg"
+  }
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app.arn
+  }
 }
 
 resource "aws_ecs_cluster" "main" {
@@ -251,8 +322,14 @@ resource "aws_ecs_service" "app" {
   name            = "${local.name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 1
+  desired_count   = var.app_replicas
   launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app.arn
+    container_name   = local.name
+    container_port   = local.container_port
+  }
 
   network_configuration {
     subnets          = aws_subnet.public[*].id
@@ -260,5 +337,5 @@ resource "aws_ecs_service" "app" {
     assign_public_ip = true
   }
 
-  depends_on = [aws_db_instance.mysql]
+  depends_on = [aws_db_instance.mysql, aws_lb_listener.http]
 }
