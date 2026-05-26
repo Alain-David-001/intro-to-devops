@@ -1,6 +1,6 @@
 # intro-to-devops-app
 
-Starter repository for the Intro to DevOps course homework. You will extend this app across the modules (endpoints, database, CI/CD, deployment, security).
+FruitAPI repository for the Intro to DevOps course homework. It includes the API implementation, Docker build, tests, CI/CD, Terraform infrastructure, ECS deployment, RDS MySQL storage, CloudWatch logs, ALB routing, and rolling deployments.
 
 **Start here:** [PROJECT-REQUIREMENTS.md](./PROJECT-REQUIREMENTS.md) — what the application must do and how it maps to the course.
 
@@ -118,14 +118,21 @@ BASE_URL=http://127.0.0.1:8000 .venv/bin/python -m pytest tests
 This repository has two GitHub Actions workflows:
 
 - Pull requests to `main` run unit tests only.
-- Pushes to `main` run unit tests, build the Docker image, run Dockerized MySQL, run integration tests against the MySQL-backed image, tag it with the SemVer value from `VERSION`, and push it to GitHub Container Registry.
+- Pushes to `main` run unit tests, build the Docker image, run Dockerized MySQL, run integration tests against the MySQL-backed image, tag it with the SemVer value from `VERSION`, push it to GitHub Container Registry, and deploy the published image to ECS.
+
+The main CI/CD workflow deploys by registering a new ECS task definition revision with the newly published image and updating `fruitapi-service`. ECS then performs the rolling deployment for the two-replica service with a deployment circuit breaker configured in Terraform. The workflow waits for the ECS service to become stable before finishing.
+
+Required repository secrets for deployment:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
 
 After the PR workflow appears in GitHub, configure the `Unit tests` check as a required status check for `main` branch protection.
 
 
 ## Versioning
 
-Docker image releases use Semantic Versioning from the `VERSION` file. Update that file before an application/runtime release, for example `0.4.0`, and the main workflow publishes `ghcr.io/<owner>/fruitapi:<version>` plus `latest`.
+Docker image releases use Semantic Versioning from the `VERSION` file. Update that file before an application/runtime release, for example `0.5.0`, and the main workflow publishes `ghcr.io/<owner>/fruitapi:<version>` plus `latest`.
 
 Docs-only or Terraform-only changes do not need a `VERSION` bump because they do not change the application image.
 

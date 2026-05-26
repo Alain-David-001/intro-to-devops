@@ -1,11 +1,12 @@
 # Terraform Deployment
 
-This Terraform configuration deploys the mandatory AWS resources for FruitAPI through HW5:
+This Terraform configuration deploys the mandatory AWS resources for FruitAPI through HW6:
 
 - VPC with two public subnets.
 - RDS MySQL database.
 - Secrets Manager secret for the database password.
 - ECS Fargate cluster, task definition, and service running FruitAPI with two replicas by default.
+- ECS rolling deployment configuration: minimum healthy 100%, maximum 200%, and circuit-breaker rollback enabled.
 - Application Load Balancer that serves FruitAPI on port 80.
 - CloudWatch log group for FruitAPI container logs.
 - Security groups so ECS can reach MySQL, the ALB can reach ECS, and only your configured IP can reach the ALB.
@@ -14,7 +15,7 @@ This Terraform configuration deploys the mandatory AWS resources for FruitAPI th
 
 - Terraform installed locally.
 - AWS CLI credentials configured for a free-tier AWS account.
-- A FruitAPI image published to GHCR. The HW5 default is `ghcr.io/alain-david-001/fruitapi:0.5.0` after the branch is merged to `main`.
+- A FruitAPI image published to GHCR. The default image is `ghcr.io/alain-david-001/fruitapi:0.5.0`.
 
 ## Usage
 
